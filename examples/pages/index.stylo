@@ -1,0 +1,25 @@
+Main {
+  Header {
+    Nav {
+      Link("T ff")
+        .to("/test")
+      Link("Test2")
+        .to("/test")
+      Link("Tfesst3")
+        .to("/test")
+    }.color($purple-900)
+  }.backgroundColor($yellow-500)
+  Heading("Header")
+  View {
+    Text("Lorem ").color($green-400)
+    Text("Ipsum").backgroundColor($red-900)
+  }.backgroundColor($blue-100)
+  View {
+    Text("AA")
+  }
+  Paragraph("Lorem  ")
+  Paragraph("Lorem  ")
+  Paragraph("Lorem  ")
+  Paragraph("Lorem  ")
+  Paragraph("Lorem  ")
+}
