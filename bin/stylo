@@ -1,0 +1,93 @@
+#!/usr/bin/env node
+const fs = require('fs');
+const chalk = require('chalk');
+const toHtml = require('hast-util-to-html')
+const pretty = require('pretty')
+require('log-timestamp');
+
+const { tokenize } = require('../dist/tokenize/tokenize')
+const { parse } = require('../dist/parse/parse')
+const {pipe} = require('../dist/helpers/utils')
+
+const tokenizeAndParse = pipe(
+  tokenize,
+  parse
+)
+
+const evaluate = pipe(
+  toHtml,
+  pretty
+)
+
+const [command, ...args] = process.argv.slice(2);
+let fsWait = false;
+
+if(command.toLowerCase() === 'start') {
+  process.stdout.write('\033c');
+  process.stdout.write(`WELCOME TO ${chalk.bgHex('#f26157').white('STYLO')} \n`);
+  process.stdout.write(`UPDATE FILEs \n`)
+  const defName = "pages/index.stylo"
+  fs.watch(defName, (_, filename) => {
+    if (filename) {
+      if (fsWait) return;
+      fsWait = setTimeout(() => {
+        fsWait = false;
+      }, 100);
+      fs.readFile(defName, 'utf-8', (error, file) => {
+      if(error) {
+        console.error(error);
+      }
+
+      const result = evaluate({
+        type: 'root',
+        children: [
+          {
+            type: 'doctype',
+            name: 'html',
+            public: null,
+            system: null
+          }, {
+            type: 'element',
+            tagName: 'html',
+            properties: {
+              lang: 'en'
+            },
+            children: [
+              {
+                type: 'element',
+                tagName: 'meta',
+                properties: {
+                  charset: 'UTF-8'
+                }
+              },
+              {
+                type: 'element',
+                tagName: 'link',
+                properties: {
+                  rel: 'stylesheet',
+                  href: 'style.css'
+                }
+              },
+              {
+                type: 'element',
+                tagName: 'body',
+                children: [
+                  tokenizeAndParse(file)
+                ]
+              }
+            ]
+          }
+        ]
+      })
+
+      fs.writeFile(`dist/index.html`, result, (err) => {
+        if(err) {
+          console.error(err);
+        }
+        console.log('SAVED')
+      })
+    })
+    }
+  })
+}
+
